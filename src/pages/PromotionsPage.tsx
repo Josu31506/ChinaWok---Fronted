@@ -5,13 +5,26 @@ import { useProducts } from '../hooks/useProducts';
 import { listCategories } from '../services/productService';
 import ProductFilters from '../components/products/ProductFilters';
 import type { Product } from '../data/products';
-import { useMemo, useState } from 'react';
-
-const categories = listCategories();
+import { useMemo, useState, useEffect } from 'react';
 
 const PromotionsPage = () => {
   const [activeCategory, setActiveCategory] = useState<Product['category']>('Para compartir');
+  const [categories, setCategories] = useState<Product['category'][]>(['Para compartir']);
   const { products, loading } = useProducts({ category: activeCategory });
+
+  // Cargar categorías al montar el componente
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const cats = await listCategories();
+        setCategories(cats as Product['category'][]);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   const filteredProducts = useMemo(() => {
     if (activeCategory === 'Para compartir') {
